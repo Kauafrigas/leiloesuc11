@@ -85,22 +85,34 @@ public class ProdutosDAO {
 }
 
     public void venderProduto(int produtoId) {
-    EntityManager em = JPAUtil.getEntityManager();
+    Connection conn = null;
+    PreparedStatement prep = null;
+    
     try {
-        em.getTransaction().begin();
-        Produto produto = em.find(Produto.class, produtoId);
-        if (produto != null) {
-            produto.setStatus("Vendido");
-            em.merge(produto);
-            em.getTransaction().commit();
+        conn = new conectaDAO().connectDB();
+        String query = "UPDATE produto SET status = 'Vendido' WHERE id = ?";
+        
+        prep = conn.prepareStatement(query);
+        prep.setInt(1, produtoId);
+        int result = prep.executeUpdate();
+        
+        if (result > 0) {
+            JOptionPane.showMessageDialog(null, "Produto vendido com sucesso!");
+        } else {
+            JOptionPane.showMessageDialog(null, "Produto não encontrado ou falha ao vender.");
         }
-    } catch (Exception e) {
-        em.getTransaction().rollback();
-        e.printStackTrace();
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, "Erro ao vender produto: " + e.getMessage());
     } finally {
-        em.close();
+        try {
+            if (prep != null) prep.close();
+            if (conn != null) conn.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao fechar a conexão: " + e.getMessage());
+        }
     }
 }
+
 
    
 public ArrayList<ProdutosDTO> listarProdutosVendidos() {
@@ -133,6 +145,9 @@ public ArrayList<ProdutosDTO> listarProdutosVendidos() {
     }
     return listaVendidos;
 }
+
+
+
 }
 
 
