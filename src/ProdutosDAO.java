@@ -83,8 +83,26 @@ public class ProdutosDAO {
     return lista;
 }
 
-    
-    
+    public void venderProduto(int produtoId) {
+    EntityManager em = JPAUtil.getEntityManager();
+    try {
+        em.getTransaction().begin();
+        Produto produto = em.find(Produto.class, produtoId);
+        if (produto != null) {
+            produto.setStatus("Vendido");
+            em.merge(produto);
+            em.getTransaction().commit();
+        }
+    } catch (Exception e) {
+        em.getTransaction().rollback();
+        e.printStackTrace();
+    } finally {
+        em.close();
+    }
+}
+
+   
+
     
         
 }
